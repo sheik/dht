@@ -3,6 +3,12 @@
    Hash Table.
 
    Check out the tests for usage examples.
+
+   RPC functions:
+   PING
+   STORE
+   FIND_NODE
+   FIND_VALUE
 */
 package dht
 
@@ -19,28 +25,64 @@ import (
 // k defines key length in bits
 const k = 32
 
+// type of the keys used
+type Key uint64
+
+// the RPC server
+type DHT int
+
+type Pong struct{}
+type Ping struct{}
+
+type KeyVal struct {
+	key Key
+	val string
+}
+
+type Result struct {
+	status bool
+}
+
+// RPC Ping function
+func (t *DHT) Ping(ping *Ping, pong *Pong) error {
+	return nil
+}
+
+// RPC Store function
+func (t *DHT) Store(kv *KeyVal, res *Result) error {
+	return nil
+}
+
+func (t *DHT) LookupNode() error {
+	return nil
+}
+
+func (t *DHT) LookupValue() error {
+	return nil
+}
+
 type Node struct {
-	id     uint32
+	id     Key
 	next   *Node
-	data   map[uint32]string
-	finger map[uint32]*Node
+	data   map[Key]string
+	finger map[Key]*Node
 }
 
 // constructor for a new node
-func NewNode(id uint32) *Node {
-	return &Node{data: map[uint32]string{}}
+func NewNode(id Key) *Node {
+	return &Node{data: map[Key]string{}}
 }
 
 // defines the distance between two keys
 // using the kademlia xor metric
-func distance(a, b uint32) uint32 {
+func Distance(a, b Key) Key {
 	return a ^ b
 }
 
 // locate the node responsible for a key
-func (start *Node) find(key uint32) *Node {
+func (start *Node) Find(key Key) *Node {
 	current := start
-	for distance(current.id, key) > distance(current.next.id, key) {
+	for Distance(current.id, key) > Distance(current.next.id, key) {
 		current = current.next
 	}
 	return current
@@ -48,15 +90,15 @@ func (start *Node) find(key uint32) *Node {
 
 // Find the node responsible for the given
 // key and return the value stored there
-func (start *Node) lookup(key uint32) string {
-	node := start.find(key)
+func (start *Node) Lookup(key Key) string {
+	node := start.Find(key)
 	return node.data[key]
 }
 
 // Find the node responsible for the given
 // key and store the value there
-func (start *Node) store(key uint32, value string) {
-	node := start.find(key)
+func (start *Node) Store(key Key, value string) {
+	node := start.Find(key)
 	node.data[key] = value
 }
 
